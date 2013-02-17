@@ -8,6 +8,9 @@ html = E.HTML(
     E.BODY()
 )
 
+class ClassName(object):
+    pass
+    
 
 class Selection(object):
 
@@ -27,9 +30,20 @@ class Selection(object):
         return Selection(next)
 
     def append(self, tag):
+        next = []
         for node in self.items:
-            node.append(fromstring('<' + tag + "/>"))
-        return self
+            n = fromstring('<' + tag + "/>")
+            next.append(n)
+            node.append(n)
+        return Selection(next)
+
+    def text(self, copy):
+        if isinstance(copy, str):
+            for node in self.items:
+                node.text = copy
+        elif hasattr(copy, '__call__'):
+            for i, node in enumerate(self.items):
+                node.text = copy(None, i, None)
 
 
 class P3(object):
@@ -52,7 +66,9 @@ def main():
     p3.select("body").append("div")
 
     p3.select("body").select("div").append("p")
-    p3.select("body").selectAll("div").append("span")
+    p3.select("body").selectAll("div").append("span").text("hi")
+
+    p3.select("body").selectAll("div").selectAll("span").text(lambda d, i, j: "woo %s" % i)
 
     print lxml.etree.tostring(html, pretty_print=True)
 
