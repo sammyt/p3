@@ -7,10 +7,16 @@ html = E.HTML(
     E.HEAD(),
     E.BODY()
 )
-
-class ClassName(object):
-    pass
     
+
+def string_selector(sel):
+    return lambda n, d, i, j: n.cssselect(sel)
+
+def _selector(s):
+    if isinstance(s, str):
+        return string_selector(s)
+    return s
+
 
 class Selection(object):
 
@@ -18,14 +24,15 @@ class Selection(object):
         super(Selection, self).__init__()
         self.items = items
 
-    def select(self, selector):
-        node = self.items[0]
-        return Selection([node.cssselect(selector)[0]])
+    def select(self, s):
+        node = self.items[0][0]
+        return Selection([_selector(s)(node, None, 0, 0)[:1]])
 
-    def selectAll(self, selector):
+    def selectAll(self, s):
         next = []
-        for node in self.items:
-            next += node.cssselect(selector)
+        for j, sel in enumerate(self.items):
+            for i, node in enumerate(sel):
+                next.append(_selector(s)(node, None, i, j))
 
         return Selection(next)
 
@@ -52,10 +59,10 @@ class P3(object):
         super(P3, self).__init__()
 
     def select(self, ctx):
-        return Selection([html]).select(ctx)
+        return Selection([[html]]).select(ctx)
 
     def selectAll(self, ctx):
-        return Selection([html]).selectAll(ctx)
+        return Selection([[html]]).selectAll(ctx)
 
 p3 = P3()
 
