@@ -5,78 +5,67 @@ from lxml.cssselect import CSSSelector
 
 html = E.HTML(
     E.HEAD(),
-    E.BODY()
+    E.BODY(
+        E.DIV(),
+        E.DIV(E.CLASS("foo")),
+        E.DIV()
+    )
 )
-    
-
-def string_selector(sel):
-    return lambda n, d, i, j: n.cssselect(sel)
-
-def _selector(s):
-    if isinstance(s, str):
-        return string_selector(s)
-    return s
+ 
 
 
-class Selection(object):
-
-    def __init__(self, items):
-        super(Selection, self).__init__()
-        self.items = items
-
-    def select(self, s):
-        node = self.items[0][0]
-        return Selection([_selector(s)(node, None, 0, 0)[:1]])
-
-    def selectAll(self, s):
-        next = []
-        for j, sel in enumerate(self.items):
-            for i, node in enumerate(sel):
-                next.append(_selector(s)(node, None, i, j))
-
-        return Selection(next)
-
-    def append(self, tag):
-        next = []
-        for node in self.items:
-            n = fromstring('<' + tag + "/>")
-            next.append(n)
-            node.append(n)
-        return Selection(next)
-
-    def text(self, copy):
-        if isinstance(copy, str):
-            for node in self.items:
-                node.text = copy
-        elif hasattr(copy, '__call__'):
-            for i, node in enumerate(self.items):
-                node.text = copy(None, i, None)
 
 
-class P3(object):
 
-    def __init__(self):
-        super(P3, self).__init__()
+class Selection(list):
 
-    def select(self, ctx):
-        return Selection([[html]]).select(ctx)
+    @classmethod
+    def create(cls, node):
+        sel = Selection()
+        sel.append(node)
+        sel.parentNode = node
+        root = Selection()
+        root.append(sel)
+        return root
 
-    def selectAll(self, ctx):
-        return Selection([[html]]).selectAll(ctx)
+    def text(self, text):
+        for group in self:
+            for node in group:
+                if node is not None:
+                    node.text = text
 
-p3 = P3()
+
+    def select(self, selector):
+        sel = Selection()
+
+        for m, n in enumerate(self):
+            sub = Selection()
+            group = self[m]
+            sel.append(sub)
+            sub.parentNode = group.parentNode
+            for i, node in enumerate(group):
+                if node is not None:
+                    found = node.cssselect(selector)[0]
+                    sub.append(found)
+
+
+        return sel
+
+
+
+def select(selector):
+    return Selection.create(selector)
+
+
+def selectAll(selector):
+    pass
 
 
 def main():
-
-    p3.select("body").append("div")
-    p3.select("body").append("div")
-
-    p3.select("body").select("div").append("p")
-    p3.select("body").selectAll("div").append("span").text("hi")
-
-    p3.select("body").selectAll("div").selectAll("span").text(lambda d, i, j: "woo %s" % i)
-
+    print select(html).select("body")
+    print select(html).select("body").select(".foo")
+    print select(html).select("body").select(".foo").text("hi")
+    
     print lxml.etree.tostring(html, pretty_print=True)
 
 
