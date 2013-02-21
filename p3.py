@@ -14,9 +14,6 @@ html = E.HTML(
  
 
 
-
-
-
 class Selection(list):
 
     @classmethod
@@ -28,12 +25,19 @@ class Selection(list):
         root.append(sel)
         return root
 
-    def text(self, text):
-        for group in self:
-            for node in group:
-                if node is not None:
-                    node.text = text
+    def each(fn):
+        def wrapped(self, *args):
+            for group in self:
+                for node in group:
+                    if node is not None: 
+                        fn(self, node, *args)
+            return self
+        return wrapped
 
+    @each
+    def text(self, node, text):
+        node.text = text
+        
 
     def select(self, selector):
         sel = Selection()
@@ -53,8 +57,8 @@ class Selection(list):
 
 
 
-def select(selector):
-    return Selection.create(selector)
+def select(context):
+    return Selection.create(context)
 
 
 def selectAll(selector):
