@@ -30,3 +30,5 @@ nosetests.xml
 *.mo
 
 venv
+p3.sublime-project
+p3.sublime-workspace
