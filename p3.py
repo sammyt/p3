@@ -2,6 +2,9 @@ import lxml
 from lxml.html import builder as E
 from lxml.html import fromstring, tostring
 from lxml.cssselect import CSSSelector
+from uuid import uuid4 as uid
+
+#d = E.DIV(E.CLASS("foo"))
 
 html = E.HTML(
     E.HEAD(),
@@ -11,67 +14,114 @@ html = E.HTML(
         E.DIV()
     )
 )
- 
 
 
-class Selection(list):
+class Selector(object):
+    """
+    encapsulates selecting
+    """
 
-    @classmethod
-    def create(cls, node):
-        sel = Selection()
-        sel.append(node)
-        sel.parentNode = node
-        root = Selection()
-        root.append(sel)
-        return root
+    def __init__(self, node):
+        self.node = node
 
-    def each(fn):
-        def wrapped(self, *args):
-            for group in self:
-                for node in group:
-                    if node is not None: 
-                        fn(self, node, *args)
-            return self
-        return wrapped
+    def __call__(self, selector, all=True):
+        nodes = self.node.cssselect(selector)
+        return Group(
+            self.node,
+            nodes if all else nodes[:1]
+        )
 
-    @each
-    def text(self, node, text):
-        node.text = text
-        
+
+class Group(object):
+    """
+    Contains nodes, and a pointer
+    to the parentNode for this group
+    """
+    def __init__(self, parent, nodes):
+        self.parentNode = parent
+        self.nodes = nodes
+
+
+class Selection(object):
+    """
+    A container of groups
+    """
+
+    def __init__(self, dataset):
+        self.groups = []
+        self.dataset = dataset
 
     def select(self, selector):
-        sel = Selection()
+        sel = Selection(self.dataset)
 
-        for m, n in enumerate(self):
-            sub = Selection()
-            group = self[m]
-            sel.append(sub)
-            sub.parentNode = group.parentNode
-            for i, node in enumerate(group):
-                if node is not None:
-                    found = node.cssselect(selector)[0]
-                    sub.append(found)
-
+        for j, g in enumerate(self.groups):
+            for i, n in enumerate(g.nodes):
+                p3_selector = Selector(n)
+                sel.groups.append(
+                    p3_selector(selector, all=False)
+                )
 
         return sel
 
+    def each(self, callable):
+        for j, group in enumerate(self.groups):
+            for i, node in enumerate(group.nodes):
+                callable(node, 
+                    self.dataset.get(node, None), 
+                    i, j
+                )
+        return self
 
+    def text(self, txt):
+        def _text(node, d, i, j):
+            node.text = txt if not callable(txt) else txt(node, d, i, j)
+        self.each(_text)
+        return self
 
-def select(context):
-    return Selection.create(context)
+    def datum(self, data=None):
+        if data is None:
+            return self.dataset[self.node()]
 
+        def _datum(node, d, i, j):
+            self.dataset[node] = data
 
-def selectAll(selector):
-    pass
+        self.each(_datum)
+        return self
+
+    def data(self):
+        pass
+
+    def node(self):
+        return self.groups[0].nodes[0]
+
+class P3(object):
+
+    def __init__(self, document):
+        self.document = document
+        self.data = {}
+
+    def select(self, selector):
+        sel = Selection(self.data)
+        p3_selector = Selector(self.document)
+        sel.groups.append(p3_selector(selector, all=False))
+        return sel
+
+    def selectAll(self, selector):
+        pass
 
 
 def main():
-    print select(html).select("body")
-    print select(html).select("body").select(".foo")
-    print select(html).select("body").select(".foo").text("hi")
+    p3 = P3(html)
+
+    def wibble(node, d, i, j):
+        return "%s %s %s" % tuple([d, i, j])
+
+    sel = p3.select("body").select("div:nth-child(3)")
+    sel.datum("dave").text(wibble)
+    
     
     print lxml.etree.tostring(html, pretty_print=True)
-
+    
 
 if __name__ == '__main__':
     main()
