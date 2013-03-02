@@ -4,7 +4,7 @@ from lxml.html import fromstring, tostring
 from lxml.cssselect import CSSSelector
 from uuid import uuid4 as uid
 
-#d = E.DIV(E.CLASS("foo"))
+# d = E.DIV(E.CLASS("foo"))
 
 html = E.HTML(
     E.HEAD(),
@@ -40,6 +40,7 @@ class Group(object):
     def __init__(self, parent, nodes):
         self.parentNode = parent
         self.nodes = nodes
+        self.first = None if not len(nodes) else nodes[0]
 
 
 class Selection(object):
@@ -53,23 +54,29 @@ class Selection(object):
 
     def select(self, selector):
         sel = Selection(self.dataset)
+        ds = self.dataset
 
         for j, g in enumerate(self.groups):
             for i, n in enumerate(g.nodes):
-                p3_selector = Selector(n)
-                sel.groups.append(
-                    p3_selector(selector, all=False)
-                )
+                if n is not None:
+                    p3_selector = Selector(n)
+                    subgroup = p3_selector(selector, all=False)
+                    subnode = subgroup.first
+
+                    # update selection with parent data
+                    if subnode is not None:
+                        ds[subnode] = ds.get(n, None)
+
+                    sel.groups.append(subgroup)
+                else:
+                    sel.groups.append(None)
 
         return sel
 
     def each(self, callable):
         for j, group in enumerate(self.groups):
             for i, node in enumerate(group.nodes):
-                callable(node, 
-                    self.dataset.get(node, None), 
-                    i, j
-                )
+                callable(node, self.dataset.get(node, None), i, j)
         return self
 
     def text(self, txt):
@@ -94,6 +101,7 @@ class Selection(object):
     def node(self):
         return self.groups[0].nodes[0]
 
+
 class P3(object):
 
     def __init__(self, document):
@@ -116,12 +124,11 @@ def main():
     def wibble(node, d, i, j):
         return "%s %s %s" % tuple([d, i, j])
 
-    sel = p3.select("body").select("div:nth-child(3)")
+    sel = p3.select("body").select("div")
     sel.datum("dave").text(wibble)
-    
-    
+
     print lxml.etree.tostring(html, pretty_print=True)
-    
+
 
 if __name__ == '__main__':
     main()
