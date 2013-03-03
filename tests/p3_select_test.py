@@ -20,23 +20,33 @@ def html():
     )
 
 
-def test_imported():
-    P3.should.be.callable
-
-
-def test_instance_created():
-    p3 = P3(html())
-    p3.shouldnt.be.none
-    p3.should.have.property("select").being.callable
-    p3.should.have.property("selectAll").being.callable
-
-
-def test_making_a_selection():
+def test_select_with_css():
     p3 = P3(html())
     sel = p3.select("div.foo")
     sel.should.be.a(Selection)
     sel.should.have.length_of(1)
     node = sel.node()
     node.get("class").should.contain("foo")
-    node.should.be.a(ElementBase)
+
+
+def test_select_with_callable():
+    pass
+
+def test_select_with_element():
+    pass
+
+def test_data_propogated_to_children():
+    p3 = P3(html())
+
+    d = p3.select("body").datum("wibble").select("div").datum()
+    d.should.be.equal("wibble")
+    
+def test_data_not_propogated_without_parent():
+    p3 = P3(html())
+
+    p3.select("body").datum("wibble")
+
+    d = p3.select("div").datum()
+    d.should.be.none
+
 

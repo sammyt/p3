@@ -49,6 +49,9 @@ class Selection(object):
         self.groups = []
         self.dataset = dataset
 
+    def __len__(self):
+        return len(self.groups)
+
     def select(self, selector):
         sel = Selection(self.dataset)
         ds = self.dataset
@@ -84,7 +87,7 @@ class Selection(object):
 
     def datum(self, data=None):
         if data is None:
-            return self.dataset[self.node()]
+            return self.dataset.get(self.node(), None)
 
         def _datum(node, d, i, j):
             self.dataset[node] = data
