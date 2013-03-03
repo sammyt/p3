@@ -52,6 +52,17 @@ class Selection(object):
     def __len__(self):
         return len(self.groups)
 
+    def selectAll(self, selector):
+        sel = Selection(self.dataset)
+        ds = self.dataset
+
+        for j, g in enumerate(self.groups):
+            for i, n in enumerate(g.nodes):
+                if n is not None:
+                    p3_selector = Selector(n)
+                    sel.groups.append(p3_selector(selector))
+        return sel
+
     def select(self, selector):
         sel = Selection(self.dataset)
         ds = self.dataset
@@ -115,7 +126,10 @@ class P3(object):
         return sel
 
     def selectAll(self, selector):
-        pass
+        sel = Selection(self.data)
+        p3_selector = Selector(self.document)
+        sel.groups.append(p3_selector(selector))
+        return sel
 
 def main():
     p3 = P3(html)
