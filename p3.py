@@ -2,9 +2,6 @@ import lxml
 from lxml.html import builder as E
 from lxml.html import fromstring, tostring
 from lxml.cssselect import CSSSelector
-from uuid import uuid4 as uid
-
-# d = E.DIV(E.CLASS("foo"))
 
 html = E.HTML(
     E.HEAD(),
@@ -116,7 +113,6 @@ class P3(object):
 
     def selectAll(self, selector):
         pass
-
 
 def main():
     p3 = P3(html)
