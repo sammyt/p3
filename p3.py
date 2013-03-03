@@ -151,6 +151,27 @@ class Selection(BaseSelection):
         self.each(_text)
         return self
 
+    def classed(self, cls, yesNo=None):
+        def _classed(node, d, i):
+            c = node.get("class", "").split()
+
+            if cls not in c and yesNo:
+                c.append(cls)
+            elif cls in c and not yesNo:
+                c.remove(cls)
+
+            if len(c):
+                node.set('class', ' '.join(c))
+            elif 'class' in node.attrib:
+                node.attrib.pop('class')
+            
+            
+        if yesNo is None:
+            return cls in node.get("class", "").split()
+
+        self.each(_classed)
+        return self
+
     def datum(self, data=None):
         if data is None:
             return self.dataset.get(self.node(), None)
@@ -257,6 +278,12 @@ def main():
 
     sel.enter().append("div")
     sel.text(echo)
+
+    sel = sel.data(['a', 'b', 'c', 'd'])
+    sel.exit().text("gone")
+
+    p3.selectAll("div").classed("foo", False)
+    p3.select("div:nth-child(4)").classed("bar", True)
 
     print lxml.etree.tostring(html, pretty_print=True)
 
