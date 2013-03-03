@@ -1,17 +1,5 @@
-import lxml
 from lxml.etree import ElementBase
-from lxml.html import builder as E
-from lxml.html import fromstring, tostring
-from lxml.cssselect import CSSSelector
-
-html = E.HTML(
-    E.HEAD(),
-    E.BODY(
-        E.DIV(),
-        E.DIV(E.CLASS("foo")),
-        E.DIV()
-    )
-)
+from lxml.html import fromstring
 
 
 class Selector(object):
@@ -70,7 +58,7 @@ class EnterSelection(BaseSelection):
     def select(self, selector):
         sel = Selection(self.dataset)
         ds = self.dataset
-        
+
         for j, g in enumerate(self.groups):
             update = g.updates
             for i, n in enumerate(g.nodes):
@@ -79,7 +67,7 @@ class EnterSelection(BaseSelection):
                     data = ds.get(n, None)
 
                     subgroup = p3_selector(selector, data, i, all=False)
-                    
+
                     subnode = subgroup.first
                     if subnode is not None:
                         ds[subnode] = data
@@ -164,8 +152,7 @@ class Selection(BaseSelection):
                 node.set('class', ' '.join(c))
             elif 'class' in node.attrib:
                 node.attrib.pop('class')
-            
-            
+
         if yesNo is None:
             return cls in node.get("class", "").split()
 
@@ -216,13 +203,12 @@ class Selection(BaseSelection):
             for i in range(end + 1, n):
                 exits[i] = group.nodes[i]
 
-
             exit.groups.append(Group(group.parentNode, exits))
-            
+
             ugroup = Group(group.parentNode, updates)
             egroup = Group(group.parentNode, enters)
             egroup.updates = ugroup
-            
+
             update.groups.append(ugroup)
             enter.groups.append(egroup)
             enter.update = update
@@ -231,13 +217,10 @@ class Selection(BaseSelection):
         update = Selection(self.dataset)
         exit = Selection(self.dataset)
 
-        
-
         update.enter = lambda: enter
         update.exit = lambda: exit
 
         [bind(group) for group in self.groups]
-
 
         return update
 
@@ -265,6 +248,19 @@ class P3(object):
 
 
 def main():
+    import lxml
+    from lxml.html import builder as E
+    from lxml.cssselect import CSSSelector
+
+    html = E.HTML(
+        E.HEAD(),
+        E.BODY(
+            E.DIV(),
+            E.DIV(E.CLASS("foo")),
+            E.DIV()
+        )
+    )
+
     p3 = P3(html)
 
     def out(node, d, i):
