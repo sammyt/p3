@@ -1,4 +1,5 @@
 import lxml
+from lxml.etree import ElementBase
 from lxml.html import builder as E
 from lxml.html import fromstring, tostring
 from lxml.cssselect import CSSSelector
@@ -21,7 +22,12 @@ class Selector(object):
     def __init__(self, node):
         self.node = node
 
-    def __call__(self, selector, all=True):
+    def __call__(self, selector, data=None, index=0, all=True):
+        if callable(selector):
+            return Group(self.node, [selector(self.node, data, index)])
+        elif isinstance(selector, ElementBase):
+            return Group(self.node, [selector])
+
         nodes = self.node.cssselect(selector)
         return Group(
             self.node,
@@ -37,7 +43,9 @@ class Group(object):
     def __init__(self, parent, nodes):
         self.parentNode = parent
         self.nodes = nodes
-        self.first = None if not len(nodes) else nodes[0]
+        self.first = None
+        if nodes and len(nodes):
+            self.first = nodes[0]
 
 
 class Selection(object):
@@ -71,12 +79,13 @@ class Selection(object):
             for i, n in enumerate(g.nodes):
                 if n is not None:
                     p3_selector = Selector(n)
-                    subgroup = p3_selector(selector, all=False)
+                    data = ds.get(n, None)
+
+                    subgroup = p3_selector(selector, data, i, all=False)
                     subnode = subgroup.first
 
-                    # update selection with parent data
                     if subnode is not None:
-                        ds[subnode] = ds.get(n, None)
+                        ds[subnode] = data
 
                     sel.groups.append(subgroup)
                 else:

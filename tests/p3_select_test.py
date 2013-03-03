@@ -30,10 +30,25 @@ def test_select_with_css():
 
 
 def test_select_with_callable():
-    pass
+    def callme(node, data, index):
+        node.should.be.a(ElementBase)
+        data.should.be.none
+        index.should.equal(0)
+        return p3.select("div").node()
+
+    p3 = P3(html())
+    n = p3.select(callme).node()
+    n.shouldnt.none
+
+    p3.select("div").node().should.be.equal(n)
+
 
 def test_select_with_element():
-    pass
+    p3 = P3(html())
+    n = p3.select(".foo").node()
+    n.shouldnt.none
+
+    p3.select(n).node().should.equal(n)
 
 def test_data_propogated_to_children():
     p3 = P3(html())
