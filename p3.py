@@ -199,7 +199,6 @@ class Selection(BaseSelection):
             updates = [None] * m
             enters = [None] * m
             exits = [None] * n
-            end = 0
 
             for i in range(n0):
                 node = group[i]
@@ -211,15 +210,13 @@ class Selection(BaseSelection):
                     fake = "_%d" % i
                     enters[i] = fake
                     self.dataset[fake] = node_data
-                end = i
 
-            for i in range(end + 1, m):
+            for i in range(n0, m):
                 fake = "_%d" % i
                 enters[i] = fake
                 self.dataset[fake] = data[i]
-                end = i
 
-            for i in range(end + 1, n):
+            for i in range(m, n):
                 exits[i] = group[i]
 
             exit.append(Group(group.parentNode, exits))
@@ -281,31 +278,27 @@ def main():
         E.HEAD(),
         E.BODY(
             E.DIV(),
-            E.DIV(E.CLASS("foo")),
+            E.DIV(
+                E.P()
+            ),
             E.DIV()
         )
     )
 
     p3 = P3(html)
 
-    def out(node, d, i):
-        print("%s %s" % tuple([d, i]))
-
     def echo(node, d, i):
         return "%s %s" % tuple([d, i])
 
-    sel = p3.select("body").selectAll("div")
+    sel = p3.select("body").selectAll("div").selectAll("p")
+
     sel = sel.data(['a', 'b', 'c', 'd', 'e'])
 
-    sel.enter().create("div")
+    sel.enter().create("p")
     sel.text(echo)
 
-    sel = sel.data(['a', 'b', 'c', 'd'])
-    sel.exit().text("gone")
-
-    p3.selectAll("div").classed("foo", False)
-    p3.select("div:nth-child(4)").classed("bar", True)
-
+    sel.data(['a', 'b']).exit().text("gone")
+    
     print(lxml.etree.tostring(html, pretty_print=True))
 
 if __name__ == '__main__':
