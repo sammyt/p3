@@ -2,21 +2,16 @@ from lxml.etree import ElementBase
 from lxml.html import fromstring
 
 
-class Selector(object):
-    def __init__(self, node):
-        self.node = node
+def _select(node, selector, data=None, index=0):
+    return _selectAll(node, selector, data=data, index=index)[:1]
 
-    def __call__(self, selector, data=None, index=0, all=True):
-        if callable(selector):
-            return Group(self.node, [selector(self.node, data, index)])
-        elif isinstance(selector, ElementBase):
-            return Group(self.node, [selector])
 
-        nodes = self.node.cssselect(selector)
-        return Group(
-            self.node,
-            nodes if all else nodes[:1]
-        )
+def _selectAll(node, selector, data=None, index=0):
+    if callable(selector):
+        return [selector(node, data, index)]
+    elif isinstance(selector, ElementBase):
+        return [selector]
+    return node.cssselect(selector)
 
 
 class Group(object):
@@ -32,8 +27,8 @@ class Group(object):
     def __len__(self):
         return len(self.nodes)
 
-    def __getitem__(self, index):
-        return self.nodes[index]
+    def __getitem__(self, key):
+        return self.nodes[key]
 
     def __setitem__(self, key, val):
         self.nodes[key] = val
@@ -66,7 +61,7 @@ class BaseSelection(object):
     def append(self, value):
         self.groups.append(value)
 
-    def append_node(self, tag):
+    def create(self, tag):
         def _append(node, d, i):
             new = fromstring('<%s/>' % tag)
             node.append(new)
@@ -83,14 +78,16 @@ class EnterSelection(BaseSelection):
         sel = Selection(self.dataset)
         ds = self.dataset
 
-        for j, g in enumerate(self):
+        for g in self:
             update = g.updates
             for i, n in enumerate(g):
                 if n is not None:
-                    p3_selector = Selector(g.parentNode)
                     data = ds.get(n, None)
 
-                    subgroup = p3_selector(selector, data, i, all=False)
+                    subgroup = Group(
+                        g.parentNode,
+                        _select(g.parentNode, selector, data, i)
+                    )
 
                     subnode = subgroup.first
                     if subnode is not None:
@@ -116,11 +113,11 @@ class Selection(BaseSelection):
         sel = Selection(self.dataset)
         ds = self.dataset
 
-        for j, g in enumerate(self):
-            for i, n in enumerate(g):
-                if n is not None:
-                    p3_selector = Selector(n)
-                    sel.append(p3_selector(selector))
+        for group in self:
+            for node in group:
+                if node is not None:
+                    sel.append(Group(node, _selectAll(node, selector)))
+
         return sel
 
     def select(self, selector):
@@ -130,10 +127,13 @@ class Selection(BaseSelection):
         for j, g in enumerate(self):
             for i, n in enumerate(g):
                 if n is not None:
-                    p3_selector = Selector(g.parentNode)
-                    data = ds.get(n, None)
 
-                    subgroup = p3_selector(selector, data, i, all=False)
+                    data = ds.get(n, None)
+                    subgroup = Group(
+                        g.parentNode,
+                        _select(g.parentNode, selector, data, i)
+                    )
+
                     subnode = subgroup.first
 
                     if subnode is not None:
@@ -255,19 +255,21 @@ class P3(object):
 
     def select(self, selector):
         sel = Selection(self.data)
-        p3_selector = Selector(self.document)
-        sel.append(p3_selector(selector, all=False))
+        sel.append(Group(
+            self.document,
+            _select(self.document, selector)
+            )
+        )
         return sel
 
     def selectAll(self, selector):
         sel = Selection(self.data)
-        p3_selector = Selector(self.document)
-        sel.append(p3_selector(selector))
+        sel.append(Group(
+            self.document,
+            _selectAll(self.document, selector)
+            )
+        )
         return sel
-
-# todo: Selection and Group as iterables
-# todo: data pythonic
-# todo: data tests
 
 
 def main():
@@ -295,7 +297,7 @@ def main():
     sel = p3.select("body").selectAll("div")
     sel = sel.data(['a', 'b', 'c', 'd', 'e'])
 
-    sel.enter().append_node("div")
+    sel.enter().create("div")
     sel.text(echo)
 
     sel = sel.data(['a', 'b', 'c', 'd'])
@@ -305,10 +307,6 @@ def main():
     p3.select("div:nth-child(4)").classed("bar", True)
 
     print(lxml.etree.tostring(html, pretty_print=True))
-
-    group = p3.selectAll('div')[0]
-    print group, len(group)
-
 
 if __name__ == '__main__':
     main()
