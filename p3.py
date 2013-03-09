@@ -66,6 +66,7 @@ class BaseSelection(object):
             new = fromstring('<%s/>' % tag)
             node.append(new)
             return new
+            
         return self.select(_append)
 
 
@@ -78,15 +79,15 @@ class EnterSelection(BaseSelection):
         sel = Selection(self.dataset)
         ds = self.dataset
 
-        for g in self:
-            update = g.updates
-            for i, n in enumerate(g):
-                if n is not None:
-                    data = ds.get(n, None)
+        for group in self:
+            update = group.updates
+            for i, node in enumerate(group):
+                if node is not None:
+                    data = ds.get(node, None)
 
                     subgroup = Group(
-                        g.parentNode,
-                        _select(g.parentNode, selector, data, i)
+                        group.parentNode,
+                        _select(group.parentNode, selector, data, i)
                     )
 
                     subnode = subgroup.first
@@ -124,14 +125,13 @@ class Selection(BaseSelection):
         sel = Selection(self.dataset)
         ds = self.dataset
 
-        for j, g in enumerate(self):
-            for i, n in enumerate(g):
-                if n is not None:
-
-                    data = ds.get(n, None)
+        for group in self:
+            for i, node in enumerate(group):
+                if node is not None:
+                    data = ds.get(node, None)
                     subgroup = Group(
-                        g.parentNode,
-                        _select(g.parentNode, selector, data, i)
+                        group.parentNode,
+                        _select(group.parentNode, selector, data, i)
                     )
 
                     subnode = subgroup.first
@@ -146,7 +146,7 @@ class Selection(BaseSelection):
         return sel
 
     def each(self, callable):
-        for j, group in enumerate(self):
+        for group in self:
             for i, node in enumerate(group):
                 if node is not None:
                     callable(node, self.dataset.get(node, None), i)
@@ -216,6 +216,7 @@ class Selection(BaseSelection):
                 enters[i] = fake
                 self.dataset[fake] = data[i]
 
+
             for i in range(m, n):
                 exits[i] = group[i]
 
@@ -248,10 +249,10 @@ class P3(object):
 
     def __init__(self, document):
         self.document = document
-        self.data = {}
+        self.dataset = {}
 
     def select(self, selector):
-        sel = Selection(self.data)
+        sel = Selection(self.dataset)
         sel.append(Group(
             self.document,
             _select(self.document, selector)
@@ -260,7 +261,7 @@ class P3(object):
         return sel
 
     def selectAll(self, selector):
-        sel = Selection(self.data)
+        sel = Selection(self.dataset)
         sel.append(Group(
             self.document,
             _selectAll(self.document, selector)
@@ -269,37 +270,3 @@ class P3(object):
         return sel
 
 
-def main():
-    import lxml
-    from lxml.html import builder as E
-    from lxml.cssselect import CSSSelector
-
-    html = E.HTML(
-        E.HEAD(),
-        E.BODY(
-            E.DIV(),
-            E.DIV(
-                E.P()
-            ),
-            E.DIV()
-        )
-    )
-
-    p3 = P3(html)
-
-    def echo(node, d, i):
-        return "%s %s" % tuple([d, i])
-
-    sel = p3.select("body").selectAll("div").selectAll("p")
-
-    sel = sel.data(['a', 'b', 'c', 'd', 'e'])
-
-    sel.enter().create("p")
-    sel.text(echo)
-
-    sel.data(['a', 'b']).exit().text("gone")
-    
-    print(lxml.etree.tostring(html, pretty_print=True))
-
-if __name__ == '__main__':
-    main()

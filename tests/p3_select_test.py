@@ -13,20 +13,51 @@ def html():
     return E.HTML(
         E.HEAD(),
         E.BODY(
-            E.DIV(),
-            E.DIV(E.CLASS("foo")),
-            E.DIV()
+            E.DIV(E.CLASS('first')),
+            E.DIV(E.CLASS('second'))
         )
     )
+
+def create():
+    return P3(html())
+
+
+def test_select_first_match():
+    doc = html()
+    p3 = P3(doc)
+    div = p3.select('div')
+
+    node = doc.cssselect('.first')[0]
+    div[0][0].should.equal(node)
+
+
+def test_propogates_parent_node():
+    doc = html()
+    p3 = P3(doc)
+    sel = p3.select('div')
+
+    sel[0].parentNode.shouldnt.be.none
+    sel[0].parentNode.should.equal(doc)
+
+
+def test_propogates_data_to_selected_elements():
+    data = dict(foo='bar')
+    doc = html()
+    p3 = P3(doc)
+
+    div = p3.select('body').data([data]).select('div')
+
+    node_data = p3.dataset[div[0][0]]
+    node_data.should.eql(data)
 
 
 def test_select_with_css():
     p3 = P3(html())
-    sel = p3.select("div.foo")
+    sel = p3.select('div.first')
     sel.should.be.a(Selection)
     sel.should.have.length_of(1)
     node = sel.node()
-    node.get("class").should.contain("foo")
+    node.get('class').should.contain('first')
 
 
 def test_select_with_callable():
@@ -34,18 +65,18 @@ def test_select_with_callable():
         node.should.be.a(ElementBase)
         data.should.be.none
         index.should.equal(0)
-        return p3.select("div").node()
+        return p3.select('div').node()
 
     p3 = P3(html())
     n = p3.select(callme).node()
     n.shouldnt.none
 
-    p3.select("div").node().should.be.equal(n)
+    p3.select('div').node().should.be.equal(n)
 
 
 def test_select_with_element():
     p3 = P3(html())
-    n = p3.select(".foo").node()
+    n = p3.select('.first').node()
     n.shouldnt.none
 
     p3.select(n).node().should.equal(n)
