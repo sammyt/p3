@@ -62,12 +62,11 @@ class BaseSelection(object):
         self.groups.append(value)
 
     def create(self, tag):
-        def _append(node, d, i):
+        def _create(node, d, i):
             new = fromstring('<%s/>' % tag)
             node.append(new)
             return new
-            
-        return self.select(_append)
+        return self.select(_create)
 
 
 class EnterSelection(BaseSelection):
@@ -131,7 +130,7 @@ class Selection(BaseSelection):
                     data = ds.get(node, None)
                     subgroup = Group(
                         group.parentNode,
-                        _select(group.parentNode, selector, data, i)
+                        _select(node, selector, data, i)
                     )
 
                     subnode = subgroup.first
@@ -145,12 +144,25 @@ class Selection(BaseSelection):
 
         return sel
 
+
+    def call(self, callable):
+        callable(self)
+        return self
+
     def each(self, callable):
         for group in self:
             for i, node in enumerate(group):
                 if node is not None:
                     callable(node, self.dataset.get(node, None), i)
         return self
+
+    def attr(self, name, val):
+        def _attr(node, d, i):
+            node.set(name,  val if not callable(val) else val(node, d, i))
+
+        self.each(_attr)
+        return self
+
 
     def text(self, txt):
         def _text(node, d, i):
