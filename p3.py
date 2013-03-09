@@ -257,10 +257,17 @@ class Selection(BaseSelection):
         return self[0][0]
 
 
+def _new_document():
+    from lxml.html import builder as E
+    return E.HTML(
+        E.HEAD(),
+        E.BODY()
+    )
+
 class P3(object):
 
-    def __init__(self, document):
-        self.document = document
+    def __init__(self, document=None):
+        self.document = document if document is not None else _new_document()
         self.dataset = {}
 
     def select(self, selector):
