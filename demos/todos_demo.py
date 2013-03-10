@@ -1,5 +1,6 @@
-
 from lxml.html import builder as E
+from lxml.builder import E as B
+
 from lxml.etree import tostring
 from p3 import P3
 
