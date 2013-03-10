@@ -144,6 +144,11 @@ class Selection(BaseSelection):
 
         return sel
 
+    def remove(self):
+        def _remove(node, d, i):
+            node.getparent().remove(node)
+            return node
+        return self.select(_remove)
 
     def call(self, callable):
         callable(self)
@@ -158,11 +163,10 @@ class Selection(BaseSelection):
 
     def attr(self, name, val):
         def _attr(node, d, i):
-            node.set(name,  val if not callable(val) else val(node, d, i))
+            node.set(name, val if not callable(val) else val(node, d, i))
 
         self.each(_attr)
         return self
-
 
     def text(self, txt):
         def _text(node, d, i):
@@ -228,7 +232,6 @@ class Selection(BaseSelection):
                 enters[i] = fake
                 self.dataset[fake] = data[i]
 
-
             for i in range(m, n):
                 exits[i] = group[i]
 
@@ -264,6 +267,7 @@ def _new_document():
         E.BODY()
     )
 
+
 class P3(object):
 
     def __init__(self, document=None):
@@ -275,7 +279,7 @@ class P3(object):
         sel.append(Group(
             self.document,
             _select(self.document, selector)
-            )
+        )
         )
         return sel
 
@@ -284,8 +288,6 @@ class P3(object):
         sel.append(Group(
             self.document,
             _selectAll(self.document, selector)
-            )
+        )
         )
         return sel
-
-
