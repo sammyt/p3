@@ -41,7 +41,4 @@ sel.enter().create('li')
 # use the todos callable to render the data
 sel.call(todos)
 
-
-print(tostring(html, pretty_print=True))
-
-
+print(tostring(p3.document, pretty_print=True))
