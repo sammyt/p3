@@ -1,5 +1,8 @@
-from lxml.etree import ElementBase
-from lxml.html import fromstring
+from lxml.etree import ElementBase, tostring
+from lxml.html import fromstring, html_parser
+from lxml.builder import ElementMaker
+
+E = ElementMaker(makeelement=html_parser.makeelement)
 
 
 def _select(node, selector, data=None, index=0):
@@ -63,7 +66,7 @@ class BaseSelection(object):
 
     def create(self, tag):
         def _create(node, d, i):
-            new = fromstring('<%s/>' % tag)
+            new = E(tag)
             node.append(new)
             return new
         return self.select(_create)
@@ -164,7 +167,6 @@ class Selection(BaseSelection):
     def attr(self, name, val):
         def _attr(node, d, i):
             node.set(name, val if not callable(val) else val(node, d, i))
-
         self.each(_attr)
         return self
 
