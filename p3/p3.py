@@ -44,6 +44,7 @@ class Group(object):
 
 
 class BaseSelection(object):
+    """A container of groups"""
 
     def __init__(self, dataset):
         self.groups = []
@@ -114,9 +115,6 @@ class EnterSelection(BaseSelection):
 
 
 class Selection(BaseSelection):
-    """
-    A container of groups
-    """
 
     def __init__(self, ds):
         super(Selection, self).__init__(ds)
@@ -155,7 +153,6 @@ class Selection(BaseSelection):
                     sel.append(None)
 
         return sel
-
 
     def remove(self):
         def _remove(node, d, i):
@@ -290,8 +287,7 @@ class P3(object):
         sel = Selection(self.dataset)
         sel.append(Group(
             self.document,
-            _select(self.document, selector)
-        )
+            _select(self.document, selector))
         )
         return sel
 
@@ -299,7 +295,6 @@ class P3(object):
         sel = Selection(self.dataset)
         sel.append(Group(
             self.document,
-            _selectAll(self.document, selector)
-        )
+            _selectAll(self.document, selector))
         )
         return sel
