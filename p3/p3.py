@@ -71,6 +71,15 @@ class BaseSelection(object):
             return new
         return self.select(_create)
 
+    def node(self):
+        for group in self:
+            for node in group:
+                if node is not None:
+                    return node
+
+    def empty(self):
+        return self.node is not None
+
 
 class EnterSelection(BaseSelection):
 
@@ -146,6 +155,7 @@ class Selection(BaseSelection):
                     sel.append(None)
 
         return sel
+
 
     def remove(self):
         def _remove(node, d, i):
@@ -257,9 +267,6 @@ class Selection(BaseSelection):
         [bind(group) for group in self]
 
         return update
-
-    def node(self):
-        return self[0][0]
 
 
 def _new_document():
