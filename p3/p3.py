@@ -1,5 +1,5 @@
-from lxml.etree import ElementBase, tostring
-from lxml.html import fromstring, html_parser
+from lxml.etree import ElementBase
+from lxml.html import fromstring, html_parser, tostring
 from lxml.builder import ElementMaker
 
 E = ElementMaker(makeelement=html_parser.makeelement)
@@ -282,6 +282,9 @@ class P3(object):
     def __init__(self, document=None):
         self.document = document if document is not None else _new_document()
         self.dataset = {}
+
+    def html(self):
+        return tostring(self.document, pretty_print=True, doctype='<!doctype html>')
 
     def select(self, selector):
         sel = Selection(self.dataset)
