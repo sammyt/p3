@@ -17,5 +17,5 @@ setup(
         'lxml >= 3.1.0'
     ],
     setup_requires=['pyvows'],
-    tests_require=['coverage', 'pyvows'],
+    tests_require=['pyvows'],
 )
