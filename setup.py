@@ -15,7 +15,5 @@ setup(
     install_requires=[
         'cssselect >= 0.7.1',
         'lxml >= 3.1.0'
-    ],
-    setup_requires=['pyvows'],
-    tests_require=['pyvows'],
+    ]
 )
