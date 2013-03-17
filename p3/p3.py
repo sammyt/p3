@@ -2,6 +2,8 @@ from lxml.etree import ElementBase
 from lxml.html import fromstring, html_parser, tostring
 from lxml.builder import ElementMaker
 from uuid import uuid4
+import collections
+
 
 E = ElementMaker(makeelement=html_parser.makeelement)
 
@@ -13,13 +15,15 @@ def _select(node, selector, data=None, index=0):
 
 def _selectAll(node, selector, data=None, index=0):
     if callable(selector):
-        return [selector(node, data, index)]
+        ans = selector(node, data, index)
+        return ans if isinstance(ans, list) else [ans]
     elif isinstance(selector, ElementBase):
         return [selector]
 
     nodes = node.cssselect(selector)
-    if node in nodes: nodes.remove(node)
-    
+    if node in nodes:
+        nodes.remove(node)
+
     return nodes
 
 
@@ -134,7 +138,10 @@ class Selection(BaseSelection):
         for group in self:
             for node in group:
                 if node is not None:
-                    sel.append(Group(node, _selectAll(node, selector)))
+                    sel.append(Group(
+                        node,
+                        _selectAll(node, selector, ds.get(node, None))
+                    ))
 
         return sel
 
