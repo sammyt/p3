@@ -6,6 +6,7 @@ setup(
     author='Sam Williams',
     author_email='samueltwilliams@gmail.com',
     packages=['p3'],
+    test_suite = 'tests',
     license='MIT',
     description='a minimal d3 for python',
     classifiers=[
@@ -15,6 +16,6 @@ setup(
         'cssselect >= 0.7.1',
         'lxml >= 3.1.0'
     ],
-    setup_requires=['nose'],
-    tests_require=['sure==1.1.7', 'coverage'],
+    setup_requires=['pyvows'],
+    tests_require=['coverage', 'pyvows'],
 )

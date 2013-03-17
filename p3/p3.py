@@ -1,12 +1,14 @@
 from lxml.etree import ElementBase
 from lxml.html import fromstring, html_parser, tostring
 from lxml.builder import ElementMaker
+from uuid import uuid4
 
 E = ElementMaker(makeelement=html_parser.makeelement)
 
 
 def _select(node, selector, data=None, index=0):
-    return _selectAll(node, selector, data=data, index=index)[:1]
+    sel = _selectAll(node, selector, data=data, index=index)[:1]
+    return None if len(sel) == 0 else sel[0]
 
 
 def _selectAll(node, selector, data=None, index=0):
@@ -14,18 +16,25 @@ def _selectAll(node, selector, data=None, index=0):
         return [selector(node, data, index)]
     elif isinstance(selector, ElementBase):
         return [selector]
-    return node.cssselect(selector)
+
+    nodes = node.cssselect(selector)
+    if node in nodes: nodes.remove(node)
+    
+    return nodes
+
+
+def _fake_node(d, ds):
+    node = uuid4()
+    ds[node] = d
+    return node
 
 
 class Group(object):
     """Contains nodes, and a pointer
     to the parentNode for this group"""
-    def __init__(self, parent, nodes):
+    def __init__(self, parent, nodes=None):
         self.parentNode = parent
-        self.nodes = nodes
-        self.first = None
-        if nodes and len(nodes):
-            self.first = nodes[0]
+        self.nodes = nodes if nodes is not None else list()
 
     def __len__(self):
         return len(self.nodes)
@@ -46,9 +55,10 @@ class Group(object):
 class BaseSelection(object):
     """A container of groups"""
 
-    def __init__(self, dataset):
+    def __init__(self, root):
         self.groups = []
-        self.dataset = dataset
+        self.dataset = root.dataset
+        self.root = root
 
     def __len__(self):
         return len(self.groups)
@@ -84,43 +94,41 @@ class BaseSelection(object):
 
 class EnterSelection(BaseSelection):
 
-    def __init__(self, ds):
-        super(EnterSelection, self).__init__(ds)
+    def __init__(self, root):
+        super(EnterSelection, self).__init__(root)
 
     def select(self, selector):
-        sel = Selection(self.dataset)
+        sel = Selection(self.root)
         ds = self.dataset
 
         for group in self:
             update = group.updates
+            subgroup = Group(group.parentNode)
+            sel.append(subgroup)
             for i, node in enumerate(group):
                 if node is not None:
                     data = ds.get(node, None)
 
-                    subgroup = Group(
-                        group.parentNode,
-                        _select(group.parentNode, selector, data, i)
-                    )
+                    subnode = _select(group.parentNode, selector, data, i)
+                    subgroup.append(subnode)
 
-                    subnode = subgroup.first
                     if subnode is not None:
                         ds[subnode] = data
 
-                    sel.append(subgroup)
                     update[i] = subnode
                 else:
-                    sel.append(None)
+                    subgroup.append(None)
 
         return sel
 
 
 class Selection(BaseSelection):
 
-    def __init__(self, ds):
-        super(Selection, self).__init__(ds)
+    def __init__(self, root):
+        super(Selection, self).__init__(root)
 
     def selectAll(self, selector):
-        sel = Selection(self.dataset)
+        sel = Selection(self.root)
         ds = self.dataset
 
         for group in self:
@@ -131,26 +139,22 @@ class Selection(BaseSelection):
         return sel
 
     def select(self, selector):
-        sel = Selection(self.dataset)
-        ds = self.dataset
+        sel = Selection(self.root)
 
         for group in self:
+            subgroup = Group(group.parentNode)
+            sel.append(subgroup)
             for i, node in enumerate(group):
                 if node is not None:
-                    data = ds.get(node, None)
-                    subgroup = Group(
-                        group.parentNode,
-                        _select(node, selector, data, i)
-                    )
+                    data = self.dataset.get(node, None)
 
-                    subnode = subgroup.first
+                    subnode = _select(node, selector, data, i)
+                    subgroup.append(subnode)
 
                     if subnode is not None:
-                        ds[subnode] = data
-
-                    sel.append(subgroup)
+                        self.dataset[subnode] = data
                 else:
-                    sel.append(None)
+                    subgroup.append(None)
 
         return sel
 
@@ -171,7 +175,11 @@ class Selection(BaseSelection):
                     callable(node, self.dataset.get(node, None), i)
         return self
 
-    def attr(self, name, val):
+    def attr(self, name, val=None):
+
+        if val is None:
+            return self.node().get(name, None)
+
         def _attr(node, d, i):
             node.set(name, val if not callable(val) else val(node, d, i))
         self.each(_attr)
@@ -232,14 +240,10 @@ class Selection(BaseSelection):
                     self.dataset[node] = node_data
                     updates[i] = node
                 else:
-                    fake = "_%d" % i
-                    enters[i] = fake
-                    self.dataset[fake] = node_data
+                    enters[i] = _fake_node(node_data, self.dataset)
 
             for i in range(n0, m):
-                fake = "_%d" % i
-                enters[i] = fake
-                self.dataset[fake] = data[i]
+                enters[i] = _fake_node(data[i], self.dataset)
 
             for i in range(m, n):
                 exits[i] = group[i]
@@ -254,14 +258,20 @@ class Selection(BaseSelection):
             enter.append(egroup)
             enter.update = update
 
-        enter = EnterSelection(self.dataset)
-        update = Selection(self.dataset)
-        exit = Selection(self.dataset)
+        enter = EnterSelection(self.root)
+        update = Selection(self.root)
+        exit = Selection(self.root)
 
         update.enter = lambda: enter
         update.exit = lambda: exit
 
-        [bind(group) for group in self]
+        #[bind(group) for group in self]
+
+        for group in self:
+            try:
+                bind(group)
+            except Exception as e:
+                print e
 
         return update
 
@@ -284,17 +294,15 @@ class P3(object):
         return tostring(self.document, pretty_print=True, doctype='<!doctype html>')
 
     def select(self, selector):
-        sel = Selection(self.dataset)
-        sel.append(Group(
-            self.document,
-            _select(self.document, selector))
-        )
+        sel = Selection(self)
+        subgroup = Group(self.document)
+        subgroup.append(_select(self.document, selector))
+        sel.append(subgroup)
         return sel
 
     def selectAll(self, selector):
-        sel = Selection(self.dataset)
-        sel.append(Group(
-            self.document,
-            _selectAll(self.document, selector))
-        )
+        sel = Selection(self)
+        subgroup = Group(self.document)
+        subgroup.append(_selectAll(self.document, selector))
+        sel.append(subgroup)
         return sel
