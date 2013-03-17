@@ -192,9 +192,12 @@ class Selection(BaseSelection):
         self.each(_attr)
         return self
 
-    def text(self, txt):
+    def text(self, val=None):
+        if val is None:
+            return self.node().text_content()
+
         def _text(node, d, i):
-            node.text = txt if not callable(txt) else txt(node, d, i)
+            node.text = val if not callable(val) else val(node, d, i)
         self.each(_text)
         return self
 
