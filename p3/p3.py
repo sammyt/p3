@@ -272,13 +272,7 @@ class Selection(BaseSelection):
         update.enter = lambda: enter
         update.exit = lambda: exit
 
-        #[bind(group) for group in self]
-
-        for group in self:
-            try:
-                bind(group)
-            except Exception as e:
-                print e
+        [bind(group) for group in self]
 
         return update
 
