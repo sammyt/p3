@@ -1,5 +1,5 @@
 from lxml.etree import ElementBase
-from lxml.html import fromstring, html_parser, tostring
+from lxml.html import fromstring, html_parser, tostring, fragments_fromstring
 from lxml.builder import ElementMaker
 from uuid import uuid4
 import collections
@@ -190,6 +190,20 @@ class Selection(BaseSelection):
         def _attr(node, d, i):
             node.set(name, val if not callable(val) else val(node, d, i))
         self.each(_attr)
+        return self
+
+    def html(self, val=None):
+        if val is None:
+            return tostring(self.node(), pretty_print=True)
+
+        frags = fragments_fromstring(val)
+
+        for child in self.node():
+            self.node().remove(child)
+
+        for new in frags:
+            self.node().append(new)
+
         return self
 
     def text(self, val=None):
