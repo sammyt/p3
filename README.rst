@@ -12,10 +12,21 @@ P3 enables a d3 like API onto a `lxml`_ tree.
 Basic Usage
 -----------
 
+Installation
+~~~~~~~~~~~
+
+.. code:: none
+
+    pip install p3
+
+
+
 Creating a simple document
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
+    
+    from p3 import P3
 
     # create a new P3
     p3 = P3()
@@ -32,6 +43,8 @@ Binding to some data
 ~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
+    
+    from p3 import P3
 
     p3 = P3()
 
