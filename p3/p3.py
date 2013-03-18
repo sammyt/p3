@@ -9,11 +9,11 @@ E = ElementMaker(makeelement=html_parser.makeelement)
 
 
 def _select(node, selector, data=None, index=0):
-    sel = _selectAll(node, selector, data=data, index=index)[:1]
+    sel = _select_all(node, selector, data=data, index=index)[:1]
     return None if len(sel) == 0 else sel[0]
 
 
-def _selectAll(node, selector, data=None, index=0):
+def _select_all(node, selector, data=None, index=0):
     if callable(selector):
         ans = selector(node, data, index)
         return ans if isinstance(ans, list) else [ans]
@@ -131,7 +131,7 @@ class Selection(BaseSelection):
     def __init__(self, root):
         super(Selection, self).__init__(root)
 
-    def selectAll(self, selector):
+    def select_all(self, selector):
         sel = Selection(self.root)
         ds = self.dataset
 
@@ -140,7 +140,7 @@ class Selection(BaseSelection):
                 if node is not None:
                     sel.append(Group(
                         node,
-                        _selectAll(node, selector, ds.get(node, None))
+                        _select_all(node, selector, ds.get(node, None))
                     ))
 
         return sel
@@ -318,9 +318,9 @@ class P3(object):
         sel.append(subgroup)
         return sel
 
-    def selectAll(self, selector):
+    def select_all(self, selector):
         sel = Selection(self)
         subgroup = Group(self.document)
-        subgroup.append(_selectAll(self.document, selector))
+        subgroup.append(_select_all(self.document, selector))
         sel.append(subgroup)
         return sel

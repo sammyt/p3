@@ -25,27 +25,27 @@ class SelectionSelectAll(Vows.Context):
             return P3(html).select('body')
 
         def select_all_matching(self, body):
-            div = body.selectAll('div')
+            div = body.select_all('div')
             doc = div.root.document
 
             expect(div[0][0]).to_equal(doc[1][0])
             expect(div[0][1]).to_equal(doc[1][1])
 
         def progrates_parent_to_selected(self, body):
-            div = body.selectAll('div')
+            div = body.select_all('div')
             doc = div.root.document
 
             expect(div[0].parentNode).to_equal(doc[1])
 
         def does_not_propogate_data(self, body):
-            div = body.data(['a', 'b']).selectAll('div')
+            div = body.data(['a', 'b']).select_all('div')
             ds = div.root.dataset
 
             expect(ds.get(div[0][0], "nope")).to_equal('nope')
             expect(ds.get(div[0][1], "nope")).to_equal('nope')
 
         def returns_an_empty_array_if_no_match(self, body):
-            span = body.selectAll('span')
+            span = body.select_all('span')
             expect(span).to_length(1)
             expect(span[0]).to_length(0)
 
@@ -58,13 +58,12 @@ class SelectionSelectAll(Vows.Context):
             doc_body = doc[1]
 
             def to_call(node, data, index):
-                print node, data, index
                 datas.append(data)
                 indexes.append(index)
                 nodes.append(node)
                 return node.getchildren()
 
-            s = body.data([data]).selectAll(to_call)
+            s = body.data([data]).select_all(to_call)
 
             expect(datas).to_equal([data])
             expect(indexes).to_equal([0])
@@ -76,7 +75,7 @@ class SelectionSelectAll(Vows.Context):
 
 
     class SelectAllDiv(Vows.Context):
-        """selectAll(div)"""
+        """select_all(div)"""
 
         def topic(self):
             html = E.HTML(
@@ -84,7 +83,7 @@ class SelectionSelectAll(Vows.Context):
                 E.BODY()
             )
             p3 = P3(html)
-            div = p3.select('body').selectAll('div')\
+            div = p3.select('body').select_all('div')\
               .data(range(2)).enter().create("div")
 
             div.create("span").attr("class", "first")
@@ -92,7 +91,7 @@ class SelectionSelectAll(Vows.Context):
             return div
 
         def select_all_mathching(self, div):
-            span = div.selectAll('span')
+            span = div.select_all('span')
             expect(span).to_length(2)
             expect(span[0]).to_length(2)
 
@@ -103,13 +102,13 @@ class SelectionSelectAll(Vows.Context):
 
         def propogates_parent_to_selected(self, div):
             body = div.root.document[1]
-            span = div.selectAll('span')
+            span = div.select_all('span')
             expect(span[0].parentNode).to_equal(body[0])
             expect(span[1].parentNode).to_equal(body[1])
 
 
         def returns_an_empty_array_if_no_match(self, div):
-            sub = div.selectAll('div')
+            sub = div.select_all('div')
             expect(sub).to_length(2)
             expect(sub[0]).to_length(0)
             expect(sub[1]).to_length(0)

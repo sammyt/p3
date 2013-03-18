@@ -52,7 +52,7 @@ Binding to some data
     sel = p3.select('body').create('div').create('ul')
 
     # bind the li elements of the list to an iterable
-    sel = sel.selectAll('li').data(["foo", "bar"])
+    sel = sel.select_all('li').data(["foo", "bar"])
 
     # create li elements required to display the data
     sel.enter().create('li')

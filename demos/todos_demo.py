@@ -34,7 +34,7 @@ def todos(selection):
 p3 = P3(html)
 
 # set the date on the selection
-sel = p3.select('ol').selectAll('li').data(things_to_do)
+sel = p3.select('ol').select_all('li').data(things_to_do)
 
 # create list items where needed 
 sel.enter().create('li')

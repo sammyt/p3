@@ -65,7 +65,7 @@ class SelectionSelect(Vows.Context):
 
 
     class SelectAllDiv(Vows.Context):
-        """selectAll(div)"""
+        """select_all(div)"""
 
         def topic(self):
             html = E.HTML(
@@ -73,7 +73,7 @@ class SelectionSelect(Vows.Context):
                 E.BODY()
             )
             p3 = P3(html)
-            div = p3.select('body').selectAll('div')\
+            div = p3.select('body').select_all('div')\
               .data(range(2)).enter().create("div")
 
             div.create("span").attr("class", "first")

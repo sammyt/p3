@@ -38,7 +38,7 @@ def lastest_news(selection):
         'pond floods cabbage patch'
     ]
     ol = selection.create('ol')
-    update = ol.selectAll('li').data(news)
+    update = ol.select_all('li').data(news)
     update.enter().create('li')
     update.text(lambda n, d, i: d)
 
