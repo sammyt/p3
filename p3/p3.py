@@ -249,9 +249,9 @@ class Selection(BaseSelection):
         if data is None:
             return self.dataset.get(self.node(), None)
 
-        def bind(group):
+        def bind(group, values):
             n = len(group)
-            m = len(data)
+            m = len(values)
             n0 = min(n, m)
             updates = [None] * m
             enters = [None] * m
@@ -259,7 +259,7 @@ class Selection(BaseSelection):
 
             for i in range(n0):
                 node = group[i]
-                node_data = data[i]
+                node_data = values[i]
                 if node is not None:
                     self.dataset[node] = node_data
                     updates[i] = node
@@ -267,7 +267,7 @@ class Selection(BaseSelection):
                     enters[i] = _fake_node(node_data, self.dataset)
 
             for i in range(n0, m):
-                enters[i] = _fake_node(data[i], self.dataset)
+                enters[i] = _fake_node(values[i], self.dataset)
 
             for i in range(m, n):
                 exits[i] = group[i]
@@ -289,7 +289,9 @@ class Selection(BaseSelection):
         update.enter = lambda: enter
         update.exit = lambda: exit
 
-        [bind(group) for group in self]
+        for i, group in enumerate(self):
+            bind(group, data if not callable(data) else data(
+                 group, self.dataset.get(group.parentNode, None), i))
 
         return update
 
