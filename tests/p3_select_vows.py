@@ -37,7 +37,7 @@ class SelectionSelect(Vows.Context):
         def propogates_data_to_selected(self, body):
             data = {}
             div = body.data([data]).select('div')
-            expect(div.data()).to_equal(data)
+            expect(div.data()[0]).to_equal(data)
 
         def returns_none_when_no_match(self, body):
             span = body.select('span')
@@ -99,7 +99,7 @@ class SelectionSelect(Vows.Context):
         def propogates_data_to_selected(self, div):
             data = {}
             span = div.data([data]).select('span')
-            expect(span.data()).to_equal(data)
+            expect(span.data()[0]).to_equal(data)
 
         def returns_none_when_no_match(self, div):
             sub = div.select('div')

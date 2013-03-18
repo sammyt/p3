@@ -27,10 +27,14 @@ class SelectionData(Vows.Context):
 
         def assign_data_as_a_callable(self, body):
             data = 'foo'
-            body.data(lambda n, d, i: [data])
+            body.data(lambda g, d, i: [data])
             ds = body.root.dataset
 
             expect(ds[body[0][0]]).to_equal(data)
+
+        def with_no_arguments_returns_list(self, body):
+            body.data(['foo'])
+            expect(body.data()).to_equal(['foo'])
 
     class SelectAllDiv(Vows.Context):
         """select_all(div)"""

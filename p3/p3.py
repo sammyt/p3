@@ -246,8 +246,9 @@ class Selection(BaseSelection):
         return self
 
     def data(self, data=None):
+
         if data is None:
-            return self.dataset.get(self.node(), None)
+            return [self.dataset.get(node, None) for node in self[0]]
 
         def bind(group, values):
             n = len(group)
