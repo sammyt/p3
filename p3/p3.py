@@ -1,11 +1,15 @@
+
 from lxml.etree import ElementBase
 from lxml.html import fromstring, html_parser, tostring, fragments_fromstring
 from lxml.builder import ElementMaker
+
+from cssselect import HTMLTranslator
+
 from uuid import uuid4
-import collections
 
 
 E = ElementMaker(makeelement=html_parser.makeelement)
+css_to_xpath = HTMLTranslator().css_to_xpath
 
 
 def _select(node, selector, data=None, index=0):
@@ -20,11 +24,7 @@ def _select_all(node, selector, data=None, index=0):
     elif isinstance(selector, ElementBase):
         return [selector]
 
-    nodes = node.cssselect(selector)
-    if node in nodes:
-        nodes.remove(node)
-
-    return nodes
+    return node.xpath(css_to_xpath(selector, prefix='descendant::'))
 
 
 def _fake_node(d, ds):
