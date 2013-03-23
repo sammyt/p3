@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='p3',
-    version='0.2.0',
+    version='0.2.1',
     author='Sam Williams',
     author_email='samueltwilliams@gmail.com',
     packages=['p3'],
