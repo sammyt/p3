@@ -12,19 +12,25 @@ E = ElementMaker(makeelement=html_parser.makeelement)
 css_to_xpath = HTMLTranslator().css_to_xpath
 
 
+def _matches(node, selector, data=None, index=0):
+    sel = _select_all(node, selector, data=data, index=index, prefix='self::')
+    sel = [e for e in sel if e is not None and e is not False]
+    return bool(len(sel))
+
+
 def _select(node, selector, data=None, index=0):
     sel = _select_all(node, selector, data=data, index=index)[:1]
     return None if len(sel) == 0 else sel[0]
 
 
-def _select_all(node, selector, data=None, index=0):
+def _select_all(node, selector, data=None, index=0, prefix='descendant::'):
     if callable(selector):
         ans = selector(node, data, index)
         return ans if isinstance(ans, list) else [ans]
     elif isinstance(selector, ElementBase):
         return [selector]
 
-    return node.xpath(css_to_xpath(selector, prefix='descendant::'))
+    return node.xpath(css_to_xpath(selector, prefix=prefix))
 
 
 def _fake_node(d, ds):
@@ -163,6 +169,18 @@ class Selection(BaseSelection):
                 else:
                     subgroup.append(None)
 
+        return sel
+
+    def filter(self, selector):
+        sel = Selection(self.root)
+
+        for group in self:
+            subgroup = Group(group.parentNode)
+            sel.append(subgroup)
+            for i, node in enumerate(group):
+                d = self.dataset.get(node, None)
+                if node is not None and _matches(node, selector, d, i):
+                    subgroup.append(node)
         return sel
 
     def remove(self):
