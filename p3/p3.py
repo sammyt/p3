@@ -41,9 +41,9 @@ def _fake_node(d, ds):
 
 class Group(object):
     """Contains nodes, and a pointer
-    to the parentNode for this group"""
+    to the parent_node for this group"""
     def __init__(self, parent, nodes=None):
-        self.parentNode = parent
+        self.parent_node = parent
         self.nodes = nodes if nodes is not None else list()
 
     def __len__(self):
@@ -113,13 +113,13 @@ class EnterSelection(BaseSelection):
 
         for group in self:
             update = group.updates
-            subgroup = Group(group.parentNode)
+            subgroup = Group(group.parent_node)
             sel.append(subgroup)
             for i, node in enumerate(group):
                 if node is not None:
                     data = ds.get(node, None)
 
-                    subnode = _select(group.parentNode, selector, data, i)
+                    subnode = _select(group.parent_node, selector, data, i)
                     subgroup.append(subnode)
 
                     if subnode is not None:
@@ -155,7 +155,7 @@ class Selection(BaseSelection):
         sel = Selection(self.root)
 
         for group in self:
-            subgroup = Group(group.parentNode)
+            subgroup = Group(group.parent_node)
             sel.append(subgroup)
             for i, node in enumerate(group):
                 if node is not None:
@@ -175,7 +175,7 @@ class Selection(BaseSelection):
         sel = Selection(self.root)
 
         for group in self:
-            subgroup = Group(group.parentNode)
+            subgroup = Group(group.parent_node)
             sel.append(subgroup)
             for i, node in enumerate(group):
                 d = self.dataset.get(node, None)
@@ -291,10 +291,10 @@ class Selection(BaseSelection):
             for i in range(m, n):
                 exits[i] = group[i]
 
-            exit.append(Group(group.parentNode, exits))
+            exit.append(Group(group.parent_node, exits))
 
-            ugroup = Group(group.parentNode, updates)
-            egroup = Group(group.parentNode, enters)
+            ugroup = Group(group.parent_node, updates)
+            egroup = Group(group.parent_node, enters)
             egroup.updates = ugroup
 
             update.append(ugroup)
@@ -310,7 +310,7 @@ class Selection(BaseSelection):
 
         for i, group in enumerate(self):
             bind(group, data if not callable(data) else data(
-                 group, self.dataset.get(group.parentNode, None), i))
+                 group, self.dataset.get(group.parent_node, None), i))
 
         return update
 

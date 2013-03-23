@@ -32,7 +32,7 @@ class SelectionSelect(Vows.Context):
         def propagates_parent_node_to_selected(self, body):
             div = body.select('div')
             group = div[0]
-            expect(group.parentNode).to_equal(body.root.document)
+            expect(group.parent_node).to_equal(body.root.document)
 
         def propogates_data_to_selected(self, body):
             data = {}
@@ -93,8 +93,8 @@ class SelectionSelect(Vows.Context):
         def propogate_parent_node_to_selected(self, div):
             span = div.select('span')
             body = div.root.document[1]
-            expect(span[0].parentNode).to_equal(body)
-            expect(span[0].parentNode).to_equal(div[0].parentNode)
+            expect(span[0].parent_node).to_equal(body)
+            expect(span[0].parent_node).to_equal(div[0].parent_node)
 
         def propogates_data_to_selected(self, div):
             data = {}

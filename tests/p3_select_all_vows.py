@@ -35,7 +35,7 @@ class SelectionSelectAll(Vows.Context):
             div = body.select_all('div')
             doc = div.root.document
 
-            expect(div[0].parentNode).to_equal(doc[1])
+            expect(div[0].parent_node).to_equal(doc[1])
 
         def does_not_propogate_data(self, body):
             div = body.data(['a', 'b']).select_all('div')
@@ -103,8 +103,8 @@ class SelectionSelectAll(Vows.Context):
         def propogates_parent_to_selected(self, div):
             body = div.root.document[1]
             span = div.select_all('span')
-            expect(span[0].parentNode).to_equal(body[0])
-            expect(span[1].parentNode).to_equal(body[1])
+            expect(span[0].parent_node).to_equal(body[0])
+            expect(span[1].parent_node).to_equal(body[1])
 
 
         def returns_an_empty_array_if_no_match(self, div):
