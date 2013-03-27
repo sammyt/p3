@@ -329,6 +329,9 @@ class P3(object):
         self.document = document if document is not None else _new_document()
         self.dataset = {}
 
+    def __str__(self):
+        return self.html()
+
     def html(self):
         return tostring(self.document, pretty_print=True, doctype='<!doctype html>')
 
