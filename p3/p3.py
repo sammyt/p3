@@ -40,6 +40,7 @@ def _fake_node(d, ds):
 
 
 class Group(object):
+
     """Contains nodes, and a pointer
     to the parent_node for this group"""
     def __init__(self, parent, nodes=None):
@@ -63,6 +64,7 @@ class Group(object):
 
 
 class BaseSelection(object):
+
     """A container of groups"""
 
     def __init__(self, root):
