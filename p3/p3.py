@@ -213,18 +213,20 @@ class Selection(BaseSelection):
         return self
 
     def html(self, val=None):
-        # todo: accept callable
         if val is None:
             return tostring(self.node(), pretty_print=True)
 
-        frags = fragments_fromstring(val)
+        def _html(node, d, i):
+            ml = val if not callable(val) else val(node, d, i)
+            frags = fragments_fromstring(ml)
 
-        for child in self.node():
-            self.node().remove(child)
+            for child in node:
+                node.remove(child)
 
-        for new in frags:
-            self.node().append(new)
+            for new in frags:
+                node.append(new)
 
+        self.each(_html)        
         return self
 
     def text(self, val=None):
