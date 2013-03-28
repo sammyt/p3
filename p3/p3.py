@@ -213,6 +213,7 @@ class Selection(BaseSelection):
         return self
 
     def html(self, val=None):
+        # todo: accept callable
         if val is None:
             return tostring(self.node(), pretty_print=True)
 
@@ -238,10 +239,11 @@ class Selection(BaseSelection):
     def classed(self, cls, yesNo=None):
         def _classed(node, d, i):
             c = node.get("class", "").split()
+            val = yesNo if not callable(yesNo) else yesNo(node, d, i)
 
-            if cls not in c and yesNo:
+            if cls not in c and val:
                 c.append(cls)
-            elif cls in c and not yesNo:
+            elif cls in c and not val:
                 c.remove(cls)
 
             if len(c):
