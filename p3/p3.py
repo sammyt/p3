@@ -226,7 +226,7 @@ class Selection(BaseSelection):
             for new in frags:
                 node.append(new)
 
-        self.each(_html)        
+        self.each(_html)
         return self
 
     def text(self, val=None):
