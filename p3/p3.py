@@ -62,6 +62,10 @@ class Group(object):
     def append(self, value):
         self.nodes.append(value)
 
+    def __repr__(self):
+        return 'Group(parent=%r, nodes=%r)' % (self.parent_node, self.nodes,)
+
+
 
 class BaseSelection(object):
 
@@ -103,6 +107,8 @@ class BaseSelection(object):
     def empty(self):
         return self.node is not None
 
+    def __repr__(self):
+        return 'Selection(groups=%r)' % self.groups
 
 class EnterSelection(BaseSelection):
 
