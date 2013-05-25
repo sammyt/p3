@@ -104,8 +104,8 @@ Driving the document with data
     sel = p3.select('body').create('div').classed('container', True)
     sel = sel.create('ul')
 
-    update = sel.select_all('ul').data(teas)
-    update.enter().create('ul')
+    update = sel.select_all('li').data(teas)
+    update.enter().create('li')
 
     update.text(lambda n, d, i: "lovely %s tea" % d)
 
