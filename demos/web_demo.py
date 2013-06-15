@@ -1,5 +1,4 @@
 from p3 import P3
-from lxml.html import tostring
 from flask import Flask
 
 app = Flask("p3-demo")
@@ -8,7 +7,8 @@ app.debug = True
 
 def head(selection):
     selection.create('meta').attr('charset', 'utf-8')
-    selection.create('style').attr('href', 'styles.css').attr('rel', 'stylesheets')
+    selection.create('style').attr(
+        'href', 'styles.css').attr('rel', 'stylesheets')
 
 
 def heading(selection):
@@ -25,10 +25,9 @@ def content(selection):
 
 
 def slow_content(selection):
-    selection.text("""Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+    selection.text("""Lorem ipsum dolor sit amet, consectetur adipisicing
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
         quis nostrud exercitation ullamco laboris nisi ut aliquip ex""")
-
 
 
 def lastest_news(selection):
@@ -58,7 +57,7 @@ def index():
     body.create('section').call(content)
     body.create('footer').call(footer)
 
-    return tostring(p3.document)
+    return p3.html()
 
 if __name__ == "__main__":
     app.run()
