@@ -1,6 +1,6 @@
 
 from lxml.etree import ElementBase
-from lxml.html import fromstring, html_parser, tostring, fragments_fromstring
+from lxml.html import html_parser, tostring, fragments_fromstring
 from lxml.builder import ElementMaker
 
 from cssselect import HTMLTranslator
@@ -66,7 +66,6 @@ class Group(object):
         return 'Group(parent=%r, nodes=%r)' % (self.parent_node, self.nodes,)
 
 
-
 class BaseSelection(object):
 
     """A container of groups"""
@@ -109,6 +108,7 @@ class BaseSelection(object):
 
     def __repr__(self):
         return 'Selection(groups=%r)' % self.groups
+
 
 class EnterSelection(BaseSelection):
 
